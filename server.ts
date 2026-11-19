@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ASSISTANT_GREETING_PT_BR =
-  'Olá! Seja bem-vindo. Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento. O banco recebedor é o Banco do Brasil, em nome de João Pedro. É simples, rápido e seguro.';
+  'Olá! Seja bem-vindo. Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento. O recebedor é Guilherme Pereira Costa. É simples, rápido e seguro. Obrigado!';
 
 let cachedWavBuffer: Buffer | null = null;
 let pendingTtsPromise: Promise<Buffer> | null = null;
@@ -31,7 +31,7 @@ function getGeminiClient(apiVersion = 'v1beta'): GoogleGenAI | null {
 }
 
 const VOICE_STYLE_PROMPT =
-  'Voz feminina adulta (entre 30 e 40 anos), nativa do português brasileiro. Tom suave, calmo, acolhedor e confiante. Fala tranquila e sem pressa, com pronúncia clara e delicada, entonação natural de conversa educada e pequenas pausas naturais entre as frases. Sem exageros, sem tom infantil, sem animação excessiva e sem ritmo robótico.';
+  'Voz feminina adulta (entre 30 e 40 anos), nativa do português brasileiro. Tom suave, tranquilo, acolhedor, delicado e agradável. Ritmo moderado e sem pressa, com pronúncia clara, entonação natural de conversa educada e pequenas pausas naturais entre as frases. Sem aparência de GPS, atendimento eletrônico, tom infantil ou ritmo robótico.';
 
 async function requestTtsAudio(
   apiVersion: string,

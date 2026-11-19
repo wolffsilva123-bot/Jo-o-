@@ -1,6 +1,6 @@
 {
-  "name": "Pix — João Pedro | Bio Site",
-  "description": "Bio Site moderno e seguro para pagamentos via Pix para João Pedro (Banco do Brasil), com assistente virtual por voz.",
+  "name": "Pix — Guilherme Pereira Costa | Bio Site",
+  "description": "Bio Site moderno, seguro e humanizado para pagamentos via Pix para Guilherme Pereira Costa, com assistente virtual feminina por voz.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

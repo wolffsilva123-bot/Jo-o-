@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
 export const ASSISTANT_GREETING_TEXT =
-  'Olá! Seja bem-vindo. Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento. O banco recebedor é o Banco do Brasil, em nome de João Pedro. É simples, rápido e seguro.';
+  'Olá! Seja bem-vindo. Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento. O recebedor é Guilherme Pereira Costa. É simples, rápido e seguro. Obrigado!';
 
 type AssistantStatus =
   | 'loading'
@@ -13,16 +13,17 @@ type AssistantStatus =
   | 'error';
 
 const INNER_BAR_COUNT = 9;
-const OUTER_BAR_COUNT = 24;
+const OUTER_BAR_COUNT = 26;
 
 const ASSISTANT_SENTENCES = [
   'Olá! Seja bem-vindo.',
   'Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento.',
-  'O banco recebedor é o Banco do Brasil, em nome de João Pedro.',
+  'O recebedor é Guilherme Pereira Costa.',
   'É simples, rápido e seguro.',
+  'Obrigado!',
 ];
 
-function pickPtBrFemaleVoice(): SpeechSynthesisVoice | null {
+function pickNaturalPtBrFemaleVoice(): SpeechSynthesisVoice | null {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     return null;
   }
@@ -30,12 +31,8 @@ function pickPtBrFemaleVoice(): SpeechSynthesisVoice | null {
   const ptBrVoices = voices.filter((v) =>
     v.lang.toLowerCase().replace('_', '-').startsWith('pt-br')
   );
-  const pool =
-    ptBrVoices.length > 0
-      ? ptBrVoices
-      : voices.filter((v) => v.lang.toLowerCase().startsWith('pt'));
 
-  if (pool.length === 0) return null;
+  if (ptBrVoices.length === 0) return null;
 
   const excludedMaleOrRobotic = [
     'daniel',
@@ -53,34 +50,30 @@ function pickPtBrFemaleVoice(): SpeechSynthesisVoice | null {
     'espeak',
   ];
 
-  const cleanPool = pool.filter(
-    (v) => !excludedMaleOrRobotic.some((ex) => v.name.toLowerCase().includes(ex))
-  );
-  const candidates = cleanPool.length > 0 ? cleanPool : pool;
-
-  const preferredFemaleKeywords = [
-    'francisca online (natural)',
-    'thalita online (natural)',
+  const naturalFemaleKeywords = [
     'online (natural)',
-    'natural',
+    'google português',
     'francisca',
     'thalita',
-    'google português',
     'luciana',
     'fernanda',
     'camila',
     'raquel',
     'vitória',
     'vitoria',
-    'maria',
-    'female',
   ];
 
-  for (const kw of preferredFemaleKeywords) {
-    const match = candidates.find((v) => v.name.toLowerCase().includes(kw));
+  const cleanPool = ptBrVoices.filter(
+    (v) => !excludedMaleOrRobotic.some((ex) => v.name.toLowerCase().includes(ex))
+  );
+
+  for (const kw of naturalFemaleKeywords) {
+    const match = cleanPool.find((v) => v.name.toLowerCase().includes(kw));
     if (match) return match;
   }
-  return candidates[0];
+
+  // Only allow browser speech fallback when a genuinely natural voice is present
+  return null;
 }
 
 export function VoiceAssistant() {
@@ -91,7 +84,7 @@ export function VoiceAssistant() {
     Array(INNER_BAR_COUNT).fill(0.22)
   );
   const [outerLevels, setOuterLevels] = useState<number[]>(() =>
-    Array(OUTER_BAR_COUNT).fill(0.18)
+    Array(OUTER_BAR_COUNT).fill(0.16)
   );
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -111,7 +104,7 @@ export function VoiceAssistant() {
       rafRef.current = null;
     }
     setInnerLevels(Array(INNER_BAR_COUNT).fill(0.22));
-    setOuterLevels(Array(OUTER_BAR_COUNT).fill(0.18));
+    setOuterLevels(Array(OUTER_BAR_COUNT).fill(0.16));
   }, []);
 
   const startWaveLoop = useCallback(() => {
@@ -136,7 +129,7 @@ export function VoiceAssistant() {
       ) {
         analyserRef.current.getByteFrequencyData(freqData);
         const sum = freqData.reduce((acc, v) => acc + v, 0);
-        if (sum > 20) {
+        if (sum > 18) {
           hasLiveAudioData = true;
         }
       }
@@ -147,7 +140,7 @@ export function VoiceAssistant() {
           const binIndex = Math.min(freqData.length - 1, 2 + i * 3);
           const norm = freqData[binIndex] / 255;
           const centerWeight = 1 - distFromCenter * 0.08;
-          return Math.max(0.2, Math.min(1, 0.2 + norm * 0.9 * centerWeight));
+          return Math.max(0.2, Math.min(1, 0.2 + norm * 0.92 * centerWeight));
         });
         const nextOuter = Array.from({ length: OUTER_BAR_COUNT }, (_, i) => {
           const binIndex = Math.min(freqData.length - 1, 1 + Math.floor(i * 1.4));
@@ -161,9 +154,9 @@ export function VoiceAssistant() {
           const centerEnv =
             1 - Math.abs(i - (INNER_BAR_COUNT - 1) / 2) / (INNER_BAR_COUNT * 0.65);
           const wave =
-            0.45 +
-            0.35 * Math.sin(t * 1.45 + i * 0.85) +
-            0.2 * Math.cos(t * 2.3 - i * 0.6);
+            0.44 +
+            0.34 * Math.sin(t * 1.42 + i * 0.85) +
+            0.2 * Math.cos(t * 2.25 - i * 0.6);
           return Math.max(0.22, Math.min(1, wave * centerEnv + 0.14));
         });
         const nextOuter = Array.from({ length: OUTER_BAR_COUNT }, (_, i) => {
@@ -171,9 +164,9 @@ export function VoiceAssistant() {
             1 - Math.abs(i - (OUTER_BAR_COUNT - 1) / 2) / (OUTER_BAR_COUNT * 0.7);
           const wave =
             0.38 +
-            0.35 * Math.sin(t * 1.3 + i * 0.52) +
-            0.22 * Math.sin(t * 2.6 + i * 1.1);
-          return Math.max(0.15, Math.min(1, wave * centerEnv + 0.12));
+            0.34 * Math.sin(t * 1.28 + i * 0.52) +
+            0.22 * Math.sin(t * 2.55 + i * 1.1);
+          return Math.max(0.14, Math.min(1, wave * centerEnv + 0.12));
         });
         setInnerLevels(nextInner);
         setOuterLevels(nextOuter);
@@ -185,37 +178,40 @@ export function VoiceAssistant() {
     rafRef.current = requestAnimationFrame(tick);
   }, []);
 
-  const connectAnalyserIfPossible = useCallback((audioEl: HTMLAudioElement) => {
+  const connectAnalyserSafely = useCallback(async (audioEl: HTMLAudioElement) => {
     try {
-      if (sourceConnectedRef.current) {
-        if (audioCtxRef.current?.state === 'suspended') {
-          void audioCtxRef.current.resume().catch(() => {});
-        }
-        return;
-      }
       const AudioCtx =
         window.AudioContext ||
         (window as unknown as { webkitAudioContext?: typeof AudioContext })
           .webkitAudioContext;
       if (!AudioCtx) return;
 
-      const ctx = new AudioCtx();
-      // Only attach MediaElementSource if AudioContext is running or can resume cleanly
-      if (ctx.state === 'suspended') {
-        void ctx.resume().catch(() => {});
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioCtx();
       }
-      const source = ctx.createMediaElementSource(audioEl);
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 128;
-      analyser.smoothingTimeConstant = 0.78;
-      source.connect(analyser);
-      analyser.connect(ctx.destination);
 
-      audioCtxRef.current = ctx;
-      analyserRef.current = analyser;
-      sourceConnectedRef.current = true;
+      if (audioCtxRef.current.state === 'suspended') {
+        await audioCtxRef.current.resume().catch(() => {});
+      }
+
+      // Only connect MediaElementSource when AudioContext is actively running
+      // so audio output is never muted by a suspended context.
+      if (
+        !sourceConnectedRef.current &&
+        audioCtxRef.current.state === 'running'
+      ) {
+        const source = audioCtxRef.current.createMediaElementSource(audioEl);
+        const analyser = audioCtxRef.current.createAnalyser();
+        analyser.fftSize = 128;
+        analyser.smoothingTimeConstant = 0.78;
+        source.connect(analyser);
+        analyser.connect(audioCtxRef.current.destination);
+
+        analyserRef.current = analyser;
+        sourceConnectedRef.current = true;
+      }
     } catch {
-      // Fallback to smooth organic wave animation without Web Audio API
+      // Fall back to organic wave animation without interrupting playback
     }
   }, []);
 
@@ -230,16 +226,17 @@ export function VoiceAssistant() {
     }
   }, []);
 
-  const playSpeechSynthesisFallback = useCallback((): boolean => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+  const playNaturalSpeechFallback = useCallback((): boolean => {
+    const voice = pickNaturalPtBrFemaleVoice();
+    if (!voice || typeof window === 'undefined' || !('speechSynthesis' in window)) {
       return false;
     }
+
     try {
       usingSpeechFallbackRef.current = true;
       cancelSpeechFallback();
       speechCancelledRef.current = false;
 
-      const voice = pickPtBrFemaleVoice();
       let idx = 0;
 
       const speakNextSentence = () => {
@@ -252,12 +249,10 @@ export function VoiceAssistant() {
 
         const utterance = new SpeechSynthesisUtterance(ASSISTANT_SENTENCES[idx]);
         utterance.lang = 'pt-BR';
-        utterance.rate = 0.89;
-        utterance.pitch = 0.98;
-        utterance.volume = 0.95;
-        if (voice) {
-          utterance.voice = voice;
-        }
+        utterance.rate = 0.92;
+        utterance.pitch = 1.0;
+        utterance.volume = 0.96;
+        utterance.voice = voice;
 
         utterance.onstart = () => {
           if (speechCancelledRef.current) return;
@@ -273,14 +268,14 @@ export function VoiceAssistant() {
             setStatus('ended');
             stopWaveLoop();
           } else {
-            speechTimerRef.current = window.setTimeout(speakNextSentence, 320);
+            speechTimerRef.current = window.setTimeout(speakNextSentence, 280);
           }
         };
 
         utterance.onerror = () => {
           if (speechCancelledRef.current) return;
           setStatus('blocked');
-          setStatusNote('Toque no botão abaixo para ouvir as instruções.');
+          setStatusNote('Toque no botão abaixo para ouvir a assistente.');
           stopWaveLoop();
         };
 
@@ -299,27 +294,77 @@ export function VoiceAssistant() {
     }
   }, [cancelSpeechFallback, startWaveLoop, stopWaveLoop]);
 
+  const fetchNeuralVoiceAudio = useCallback(async (): Promise<HTMLAudioElement> => {
+    const res = await fetch('/api/assistant-voice?v=guilherme-1');
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+    }
+    blobUrlRef.current = url;
+
+    const audio = new Audio(url);
+    audio.preload = 'auto';
+    audioRef.current = audio;
+
+    audio.addEventListener('ended', () => {
+      setStatus('ended');
+      stopWaveLoop();
+    });
+
+    audio.addEventListener('pause', () => {
+      if (!audio.ended) {
+        setStatus((prev) => (prev === 'playing' ? 'paused' : prev));
+        stopWaveLoop();
+      }
+    });
+
+    audio.addEventListener('play', () => {
+      setStatus('playing');
+      setStatusNote('');
+      startWaveLoop();
+    });
+
+    return audio;
+  }, [startWaveLoop, stopWaveLoop]);
+
   const startPlayback = useCallback(
     async (fromUserGesture = false) => {
-      const audio = audioRef.current;
+      let audio = audioRef.current;
 
-      if (usingSpeechFallbackRef.current || (!audio && blobUrlRef.current === null)) {
-        if (fromUserGesture && audioRef.current) {
+      if (!audio && fromUserGesture) {
+        try {
+          setStatus('loading');
+          setStatusNote('');
+          audio = await fetchNeuralVoiceAudio();
           usingSpeechFallbackRef.current = false;
-        } else if (usingSpeechFallbackRef.current) {
-          playSpeechSynthesisFallback();
+        } catch {
+          const startedFallback = playNaturalSpeechFallback();
+          if (!startedFallback) {
+            setStatus('error');
+            setStatusNote(
+              'Não foi possível carregar o áudio neural no momento. Tente novamente em instantes.'
+            );
+            stopWaveLoop();
+          }
           return;
         }
+      }
+
+      if (usingSpeechFallbackRef.current) {
+        playNaturalSpeechFallback();
+        return;
       }
 
       if (!audio) return;
 
       try {
         if (fromUserGesture) {
-          connectAnalyserIfPossible(audio);
-          if (audioCtxRef.current?.state === 'suspended') {
-            await audioCtxRef.current.resume().catch(() => {});
-          }
+          await connectAnalyserSafely(audio);
         }
         audio.currentTime = 0;
         await audio.play();
@@ -332,11 +377,11 @@ export function VoiceAssistant() {
         if (isNotAllowed) {
           setStatus('blocked');
           setStatusNote(
-            'Toque para ativar o áudio e ouvir as instruções da assistente.'
+            'Seu navegador pausou o áudio automático. Toque abaixo para ativar a voz da assistente.'
           );
           stopWaveLoop();
         } else {
-          const startedFallback = playSpeechSynthesisFallback();
+          const startedFallback = playNaturalSpeechFallback();
           if (!startedFallback) {
             setStatus('error');
             setStatusNote('Não foi possível reproduzir o áudio no momento.');
@@ -345,7 +390,13 @@ export function VoiceAssistant() {
         }
       }
     },
-    [connectAnalyserIfPossible, playSpeechSynthesisFallback, startWaveLoop, stopWaveLoop]
+    [
+      connectAnalyserSafely,
+      fetchNeuralVoiceAudio,
+      playNaturalSpeechFallback,
+      startWaveLoop,
+      stopWaveLoop,
+    ]
   );
 
   useEffect(() => {
@@ -353,50 +404,16 @@ export function VoiceAssistant() {
 
     async function initAssistantAudio() {
       try {
-        const res = await fetch('/api/assistant-voice?v=2');
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-        const blob = await res.blob();
+        await fetchNeuralVoiceAudio();
         if (cancelled) return;
-
-        const url = URL.createObjectURL(blob);
-        blobUrlRef.current = url;
-
-        const audio = new Audio(url);
-        audio.preload = 'auto';
-        audioRef.current = audio;
-
-        audio.addEventListener('ended', () => {
-          if (cancelled) return;
-          setStatus('ended');
-          stopWaveLoop();
-        });
-
-        audio.addEventListener('pause', () => {
-          if (cancelled) return;
-          if (!audio.ended) {
-            setStatus((prev) => (prev === 'playing' ? 'paused' : prev));
-            stopWaveLoop();
-          }
-        });
-
-        audio.addEventListener('play', () => {
-          if (cancelled) return;
-          setStatus('playing');
-          setStatusNote('');
-          startWaveLoop();
-        });
-
-        // Attempt automatic playback on page entry
         await startPlayback(false);
       } catch {
         if (cancelled) return;
-        const ok = playSpeechSynthesisFallback();
+        const ok = playNaturalSpeechFallback();
         if (!ok) {
           setStatus('error');
           setStatusNote(
-            'Voz temporariamente indisponível. Leia as instruções abaixo.'
+            'Áudio neural temporariamente indisponível. Você pode ler as instruções abaixo ou tentar novamente.'
           );
         }
       }
@@ -423,7 +440,13 @@ export function VoiceAssistant() {
         audioCtxRef.current = null;
       }
     };
-  }, [cancelSpeechFallback, playSpeechSynthesisFallback, startPlayback, startWaveLoop, stopWaveLoop]);
+  }, [
+    cancelSpeechFallback,
+    fetchNeuralVoiceAudio,
+    playNaturalSpeechFallback,
+    startPlayback,
+    stopWaveLoop,
+  ]);
 
   const handleToggleOrb = async () => {
     if (status === 'playing') {
@@ -441,12 +464,13 @@ export function VoiceAssistant() {
       return;
     }
 
-    if (status === 'paused' && audioRef.current && !usingSpeechFallbackRef.current) {
+    if (
+      status === 'paused' &&
+      audioRef.current &&
+      !usingSpeechFallbackRef.current
+    ) {
       try {
-        connectAnalyserIfPossible(audioRef.current);
-        if (audioCtxRef.current?.state === 'suspended') {
-          await audioCtxRef.current.resume().catch(() => {});
-        }
+        await connectAnalyserSafely(audioRef.current);
         await audioRef.current.play();
         setStatus('playing');
         setStatusNote('');
@@ -469,28 +493,28 @@ export function VoiceAssistant() {
   return (
     <section
       aria-label="Assistente Virtual de Pagamento"
-      className="relative flex flex-col items-center text-center"
+      className="relative flex w-full max-w-2xl flex-col items-center text-center"
     >
-      {/* Illuminated Neon-Blue Virtual Assistant Circle */}
-      <div className="relative flex items-center justify-center mb-5">
-        {/* Ambient radial glow */}
+      {/* Illuminated Technological-Blue Virtual Assistant Circle */}
+      <div className="relative mb-5 flex items-center justify-center">
+        {/* Ambient radial glow (#168BFF + #19DDB5) */}
         <div
           aria-hidden="true"
-          className={`absolute -inset-6 rounded-full bg-sky-500/20 blur-2xl transition-opacity duration-300 ${
-            isSpeaking ? 'opacity-100' : 'opacity-45'
+          className={`absolute -inset-7 rounded-full bg-[#168BFF]/25 blur-2xl transition-opacity duration-300 ${
+            isSpeaking ? 'opacity-100' : 'opacity-50'
           }`}
         />
 
-        {/* Expanding pulse rings while speaking */}
+        {/* Expanding pulse rings synchronized with speaking state */}
         {isSpeaking && (
           <>
             <span
               aria-hidden="true"
-              className="absolute inset-0 rounded-full border border-sky-400/50 animate-pulse-ring"
+              className="absolute inset-0 rounded-full border border-[#168BFF]/60 animate-pulse-ring"
             />
             <span
               aria-hidden="true"
-              className="absolute -inset-3 rounded-full border border-teal-400/30 animate-pulse-ring [animation-delay:0.7s]"
+              className="absolute -inset-3 rounded-full border border-[#19DDB5]/35 animate-pulse-ring [animation-delay:0.75s]"
             />
           </>
         )}
@@ -504,21 +528,21 @@ export function VoiceAssistant() {
               ? 'Pausar assistente virtual'
               : 'Ouvir orientações da assistente virtual'
           }
-          className="group relative flex h-28 w-28 sm:h-32 sm:w-32 items-center justify-center rounded-full bg-[#061228] border border-sky-400/50 shadow-[0_0_40px_rgba(14,165,233,0.45),inset_0_0_24px_rgba(56,189,248,0.28)] transition-transform duration-200 hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-4 focus-visible:ring-offset-[#040914] cursor-pointer"
+          className="group relative flex h-28 w-28 sm:h-32 sm:w-32 items-center justify-center rounded-full bg-[#102B50] border border-[#168BFF]/55 shadow-[0_0_44px_rgba(22,139,255,0.48),inset_0_0_26px_rgba(22,139,255,0.3)] transition-transform duration-200 hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168BFF] focus-visible:ring-offset-4 focus-visible:ring-offset-[#080D18] cursor-pointer"
         >
-          {/* Rotating conic neon halo */}
+          {/* Rotating conic halo */}
           <span
             aria-hidden="true"
-            className={`pointer-events-none absolute -inset-[2px] rounded-full bg-[conic-gradient(from_0deg,rgba(56,189,248,0.9),rgba(20,184,166,0.5),rgba(14,165,233,0.15),rgba(56,189,248,0.9))] opacity-80 blur-[1px] ${
-              isSpeaking ? 'animate-spin-slow' : 'opacity-45'
+            className={`pointer-events-none absolute -inset-[2px] rounded-full bg-[conic-gradient(from_0deg,rgba(22,139,255,0.95),rgba(25,221,181,0.55),rgba(16,43,80,0.2),rgba(22,139,255,0.95))] opacity-85 blur-[1px] ${
+              isSpeaking ? 'animate-spin-slow' : 'opacity-50'
             }`}
           />
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-[2px] rounded-full bg-gradient-to-b from-[#0b1f3f] via-[#06132a] to-[#040b1a]"
+            className="pointer-events-none absolute inset-[2px] rounded-full bg-gradient-to-b from-[#102B50] via-[#0B1C38] to-[#080D18]"
           />
 
-          {/* Inner Sound Waves inside the illuminated circle */}
+          {/* Inner Sound Waves inside the illuminated blue circle */}
           <div
             aria-hidden="true"
             className="relative z-10 flex h-12 items-center justify-center gap-1.5 px-3"
@@ -528,8 +552,8 @@ export function VoiceAssistant() {
                 key={idx}
                 className={`w-1 rounded-full transition-colors duration-200 ${
                   isSpeaking
-                    ? 'bg-gradient-to-t from-sky-400 via-cyan-300 to-teal-300 shadow-[0_0_8px_rgba(56,189,248,0.8)]'
-                    : 'bg-sky-400/55 group-hover:bg-sky-300'
+                    ? 'bg-gradient-to-t from-[#168BFF] via-[#60B4FF] to-[#19DDB5] shadow-[0_0_10px_rgba(22,139,255,0.85)]'
+                    : 'bg-[#168BFF]/60 group-hover:bg-[#168BFF]'
                 }`}
                 style={{
                   height: '44px',
@@ -542,25 +566,27 @@ export function VoiceAssistant() {
         </button>
       </div>
 
-      {/* Assistant Identity & Live Voice State */}
-      <div className="space-y-1.5">
-        <p className="text-xs font-medium tracking-[0.14em] uppercase text-sky-300/90">
+      {/* Assistant Identity & Voice State */}
+      <div className="space-y-1">
+        <p className="text-xs sm:text-sm font-medium tracking-wide text-[#168BFF]">
           Assistente Virtual Pix
         </p>
-        <h2 className="text-lg sm:text-xl font-semibold text-white tracking-tight">
+        <h2 className="text-lg sm:text-xl font-semibold text-white tracking-tight text-balance">
           {isSpeaking
-            ? 'Falando agora...'
+            ? 'Orientando seu pagamento agora'
             : status === 'loading'
               ? 'Preparando áudio de boas-vindas...'
               : status === 'blocked'
-                ? 'Toque para ouvir a assistente'
+                ? 'Ative o áudio para ouvir as orientações'
                 : status === 'paused'
                   ? 'Áudio pausado'
-                  : 'Atendimento por voz disponível'}
+                  : status === 'error'
+                    ? 'Instruções disponíveis abaixo'
+                    : 'Atendimento por voz pronto'}
         </h2>
       </div>
 
-      {/* Horizontal Sound Wave Visualizer Strip */}
+      {/* Synchronized Sound Wave Strip */}
       <div
         aria-hidden="true"
         className="mt-3 flex h-7 items-center justify-center gap-1"
@@ -570,8 +596,8 @@ export function VoiceAssistant() {
             key={idx}
             className={`w-[3px] rounded-full transition-colors duration-200 ${
               isSpeaking
-                ? 'bg-gradient-to-t from-sky-500/80 to-teal-300'
-                : 'bg-slate-700/70'
+                ? 'bg-gradient-to-t from-[#168BFF] to-[#19DDB5]'
+                : 'bg-[#102B50]'
             }`}
             style={{
               height: '24px',
@@ -584,65 +610,67 @@ export function VoiceAssistant() {
 
       {/* Voice Controls */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={handleToggleOrb}
-          className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold whitespace-nowrap shrink-0 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
-            status === 'blocked'
-              ? 'bg-sky-500 text-slate-950 shadow-[0_0_24px_rgba(56,189,248,0.5)] hover:bg-sky-400'
-              : 'bg-sky-500/15 text-sky-200 border border-sky-400/35 hover:bg-sky-500/25'
-          }`}
-        >
-          {isSpeaking ? (
-            <>
-              <Pause className="h-4 w-4" aria-hidden="true" />
-              <span>Pausar voz</span>
-            </>
-          ) : status === 'blocked' ? (
-            <>
-              <Volume2 className="h-4 w-4" aria-hidden="true" />
-              <span>Ouvir assistente</span>
-            </>
-          ) : (
-            <>
-              <Play className="h-4 w-4" aria-hidden="true" />
-              <span>Ouvir orientação</span>
-            </>
-          )}
-        </button>
+        {status === 'blocked' ? (
+          <button
+            type="button"
+            onClick={handleToggleOrb}
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#168BFF] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_26px_rgba(22,139,255,0.5)] transition-all duration-200 hover:brightness-110 active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#080D18]"
+          >
+            <Volume2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>Ativar áudio da assistente</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleToggleOrb}
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#168BFF]/40 bg-[#102B50]/65 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-md transition-all duration-200 hover:bg-[#168BFF]/20 hover:border-[#168BFF]/70 active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168BFF]"
+          >
+            {isSpeaking ? (
+              <>
+                <Pause className="h-4 w-4 text-[#168BFF] shrink-0" aria-hidden="true" />
+                <span>Pausar voz</span>
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4 text-[#19DDB5] shrink-0" aria-hidden="true" />
+                <span>{status === 'ended' ? 'Ouvir novamente' : 'Ouvir assistente'}</span>
+              </>
+            )}
+          </button>
+        )}
 
-        {(status === 'playing' || status === 'paused' || status === 'ended') && (
+        {(status === 'playing' || status === 'paused' || status === 'error') && (
           <button
             type="button"
             onClick={handleReplay}
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/70 px-4 py-2.5 text-sm font-medium text-slate-300 whitespace-nowrap shrink-0 transition-colors duration-200 hover:border-sky-400/40 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-white/15 bg-[#102B50]/40 px-4 py-2.5 text-sm font-medium text-slate-200 backdrop-blur-md transition-colors duration-200 hover:border-[#168BFF]/50 hover:text-white whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168BFF]"
           >
-            <RotateCcw className="h-4 w-4" aria-hidden="true" />
-            <span>Repetir</span>
+            <RotateCcw className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>Ouvir novamente</span>
           </button>
         )}
 
         <button
           type="button"
           onClick={() => setShowTranscript((v) => !v)}
-          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/40 px-3.5 py-2.5 text-xs font-medium text-slate-400 whitespace-nowrap shrink-0 transition-colors hover:text-slate-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-[#080D18]/70 px-3.5 py-2.5 text-xs font-medium text-slate-300 transition-colors duration-200 hover:border-white/25 hover:text-white whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#168BFF]"
         >
           {showTranscript ? (
-            <Volume2 className="h-3.5 w-3.5 text-sky-400" aria-hidden="true" />
+            <Volume2 className="h-3.5 w-3.5 text-[#168BFF] shrink-0" aria-hidden="true" />
           ) : (
-            <VolumeX className="h-3.5 w-3.5 text-slate-500" aria-hidden="true" />
+            <VolumeX className="h-3.5 w-3.5 text-slate-400 shrink-0" aria-hidden="true" />
           )}
           <span>{showTranscript ? 'Ocultar legenda' : 'Ver legenda'}</span>
         </button>
       </div>
 
       {statusNote && (
-        <p className="mt-2.5 text-xs text-sky-300/90 max-w-md">{statusNote}</p>
+        <p className="mt-2.5 max-w-md text-xs text-[#60B4FF]">{statusNote}</p>
       )}
 
       {/* Accessible Voice Transcript Box */}
       {showTranscript && (
-        <div className="mt-4 max-w-xl rounded-2xl border border-sky-500/15 bg-[#071124]/80 px-5 py-3.5 text-sm leading-relaxed text-slate-300 backdrop-blur-md">
+        <div className="mt-4 max-w-xl rounded-2xl border border-[#168BFF]/20 bg-[#102B50]/35 px-5 py-3.5 text-sm leading-relaxed text-slate-200 backdrop-blur-xl shadow-[0_12px_32px_rgba(8,13,24,0.5)]">
           <p className="text-pretty">“{ASSISTANT_GREETING_TEXT}”</p>
         </div>
       )}

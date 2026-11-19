@@ -9,8 +9,8 @@
 @layer base {
   html {
     font-family: var(--font-sans);
-    background-color: #040914;
-    color: #f1f5f9;
+    background-color: #080D18;
+    color: #FFFFFF;
     scroll-behavior: smooth;
   }
 
@@ -31,15 +31,24 @@
 @keyframes pulseRing {
   0% {
     transform: scale(0.95);
-    opacity: 0.65;
+    opacity: 0.7;
   }
   70% {
-    transform: scale(1.24);
+    transform: scale(1.26);
     opacity: 0;
   }
   100% {
-    transform: scale(1.24);
+    transform: scale(1.26);
     opacity: 0;
+  }
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
   }
 }
 
@@ -51,9 +60,14 @@
   animation: pulseRing 2.1s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
+.animate-shimmer-sweep {
+  animation: shimmerSweep 3.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-spin-slow,
-  .animate-pulse-ring {
+  .animate-pulse-ring,
+  .animate-shimmer-sweep {
     animation: none;
   }
 }
