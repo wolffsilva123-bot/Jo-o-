@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
+  Building2,
   Check,
   CheckCircle2,
   Copy,
@@ -10,10 +11,11 @@ import {
 } from 'lucide-react';
 import { PixOfficialIcon } from './PixOfficialIcon';
 
-const PIX_KEY_RAW = '24992687918';
-const PIX_KEY_FORMATTED = '(24) 99268-7918';
-const RECIPIENT_NAME = 'Guilherme Pereira Costa';
-const PIX_KEY_TYPE = 'Número de celular';
+const PIX_KEY_RAW = '24981381224';
+const PIX_KEY_FORMATTED = '(24) 98138-1224';
+const RECIPIENT_NAME = 'João Pedro';
+const BANK_NAME = 'Banco do Brasil';
+const PIX_KEY_TYPE = 'Celular';
 
 async function copyTextToClipboard(text: string): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
@@ -95,76 +97,69 @@ export function PixPaymentCard() {
           className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#19DDB5]/75 to-transparent"
         />
 
-        {/* Top Row: Pix Official Symbol & Protection */}
-        <div className="relative flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#19DDB5]/40 bg-[#19DDB5]/12 text-[#19DDB5] shadow-[0_0_20px_rgba(25,221,181,0.2)]">
-              <PixOfficialIcon className="h-6 w-6" />
+        {/* Card Header: Highlighted Official Pix Symbol + Title + Security Seal */}
+        <div className="relative flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-6 border-b border-white/10">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#19DDB5]/45 bg-[#19DDB5]/14 text-[#19DDB5] shadow-[0_0_24px_rgba(25,221,181,0.24)]">
+              <PixOfficialIcon className="h-8 w-8" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Pix</p>
-              <p className="text-xs text-slate-300">Transferência instantânea</p>
+              <h1
+                id="pix-card-title"
+                className="text-2xl sm:text-3xl font-bold tracking-tight text-white text-balance"
+              >
+                PAGAMENTO VIA PIX
+              </h1>
+              <p className="mt-1 text-sm sm:text-base text-slate-300">
+                Rápido, prático e seguro.
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-200">
+          {/* Selo Visual de Segurança */}
+          <div className="inline-flex items-center gap-2 self-start rounded-full border border-[#19DDB5]/40 bg-[#19DDB5]/12 px-3.5 py-2 text-xs font-semibold text-[#A7F3D0] shadow-[0_0_20px_rgba(25,221,181,0.16)] whitespace-nowrap shrink-0">
             <ShieldCheck
               className="h-4 w-4 text-[#19DDB5] shrink-0"
               aria-hidden="true"
             />
-            <span>Ambiente protegido</span>
+            <span>Pagamento Seguro</span>
           </div>
         </div>
 
-        {/* Title & Subtitle */}
-        <div className="relative mt-6 text-center sm:text-left">
-          <h1
-            id="pix-card-title"
-            className="text-2xl sm:text-3xl font-bold tracking-tight text-white text-balance"
-          >
-            PAGAMENTO VIA PIX
-          </h1>
-          <p className="mt-1.5 text-sm sm:text-base text-slate-300">
-            Rápido, prático e seguro.
-          </p>
-        </div>
-
-        {/* Selo Visual de Confiança: PIX CONFIÁVEL (near recipient details) */}
-        <div className="relative mt-6 flex justify-center sm:justify-start">
-          <div className="inline-flex items-center gap-3 rounded-2xl sm:rounded-full border border-[#19DDB5]/45 bg-[#19DDB5]/14 px-4 py-2.5 shadow-[0_0_26px_rgba(25,221,181,0.2)] backdrop-blur-md">
-            <div className="flex items-center gap-1.5 text-[#19DDB5] shrink-0">
-              <ShieldCheck className="h-5 w-5" aria-hidden="true" />
-              <PixOfficialIcon className="h-4 w-4" />
-            </div>
-            <div className="text-left leading-tight">
-              <p className="text-xs sm:text-sm font-bold tracking-wide text-white">
-                PIX CONFIÁVEL
-              </p>
-              <p className="text-[11px] sm:text-xs font-medium text-[#A7F3D0]">
-                Pagamento via Pix com chave identificada.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Recipient & Pix Key Details (clean hairline separation, zero invented bank info) */}
+        {/* Recipient, Bank & Pix Key Details */}
         <div className="relative mt-6 divide-y divide-white/10 rounded-2xl bg-[#080D18]/65 px-4 sm:px-6 backdrop-blur-md">
-          {/* Recipient Name */}
-          <div className="flex items-center gap-3.5 py-4 sm:py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#168BFF]/15 text-[#168BFF] shadow-[0_0_16px_rgba(22,139,255,0.2)]">
-              <UserCheck className="h-5 w-5" aria-hidden="true" />
+          {/* Recipient Name & Banco do Brasil */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4 sm:py-5">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#168BFF]/15 text-[#168BFF] shadow-[0_0_16px_rgba(22,139,255,0.2)]">
+                <UserCheck className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-slate-400">
+                  Nome do recebedor
+                </p>
+                <p className="mt-0.5 text-lg sm:text-xl font-bold tracking-tight text-white truncate">
+                  {RECIPIENT_NAME}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-slate-400">
-                Nome do recebedor
-              </p>
-              <p className="mt-0.5 text-lg sm:text-xl font-bold tracking-tight text-white">
-                {RECIPIENT_NAME}
-              </p>
+
+            <div className="flex items-center gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 sm:border-l border-white/10 sm:pl-5 shrink-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#168BFF]/12 text-[#60B4FF]">
+                <Building2 className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-400">
+                  Banco recebedor
+                </p>
+                <p className="mt-0.5 text-sm sm:text-base font-semibold text-white">
+                  {BANK_NAME}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Formatted Pix Key & Key Type */}
+          {/* Formatted Pix Key with Smartphone Icon */}
           <div className="flex items-center justify-between gap-3 py-4 sm:py-5">
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#19DDB5]/15 text-[#19DDB5] shadow-[0_0_16px_rgba(25,221,181,0.2)]">
@@ -183,7 +178,7 @@ export function PixPaymentCard() {
             <button
               type="button"
               onClick={handleCopyPixKey}
-              aria-label="Copiar chave Pix 24992687918"
+              aria-label="Copiar chave Pix 24981381224"
               className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-[#19DDB5]/35 bg-[#19DDB5]/10 px-3 text-[#19DDB5] transition-all duration-200 hover:bg-[#19DDB5]/20 hover:border-[#19DDB5]/70 active:scale-95 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#19DDB5]"
             >
               {buttonFeedbackActive ? (
@@ -212,7 +207,6 @@ export function PixPaymentCard() {
                 : 'bg-[#19DDB5] text-[#080D18] shadow-[0_0_34px_rgba(25,221,181,0.45),0_8px_24px_rgba(25,221,181,0.28)] hover:brightness-110 hover:shadow-[0_0_46px_rgba(25,221,181,0.68)]'
             }`}
           >
-            {/* Subtle luminous sheen sweep */}
             <span
               aria-hidden="true"
               className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/35 to-transparent animate-shimmer-sweep"
@@ -254,14 +248,14 @@ export function PixPaymentCard() {
                     <span className="font-mono font-semibold text-[#19DDB5]">
                       {PIX_KEY_RAW}
                     </span>{' '}
-                    foi copiada sem espaços ou pontuação. Agora abra o aplicativo do
-                    seu banco, acesse a área{' '}
-                    <strong className="font-semibold text-white">Pix</strong>, cole a
-                    chave e finalize o pagamento para{' '}
+                    foi copiada sem espaços, parênteses ou traços. Agora abra o
+                    aplicativo do seu banco, acesse a área{' '}
+                    <strong className="font-semibold text-white">Pix</strong> e
+                    conclua o pagamento para{' '}
                     <strong className="font-semibold text-white">
                       {RECIPIENT_NAME}
-                    </strong>
-                    .
+                    </strong>{' '}
+                    ({BANK_NAME}).
                   </p>
                 </div>
               </div>
@@ -285,8 +279,8 @@ export function PixPaymentCard() {
               no aplicativo do seu banco para pagar{' '}
               <strong className="font-semibold text-white">
                 {RECIPIENT_NAME}
-              </strong>
-              .
+              </strong>{' '}
+              ({BANK_NAME}).
             </motion.div>
           )}
         </AnimatePresence>
@@ -303,7 +297,7 @@ export function PixPaymentCard() {
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#168BFF]/20 font-mono text-[11px] font-semibold text-[#60B4FF] tabular-nums">
               2
             </span>
-            <span>Abra o app do seu banco</span>
+            <span>Acesse o app do seu banco</span>
           </div>
           <div className="flex items-center gap-2.5">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#19DDB5]/20 font-mono text-[11px] font-semibold text-[#19DDB5] tabular-nums">

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
 export const ASSISTANT_GREETING_TEXT =
-  'Olá! Seja bem-vindo. Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento. O recebedor é Guilherme Pereira Costa. É simples, rápido e seguro. Obrigado!';
+  'Olá! Seja bem-vindo. Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento. O banco recebedor é o Banco do Brasil, em nome de João Pedro. É simples, rápido e seguro. Obrigado!';
 
 type AssistantStatus =
   | 'loading'
@@ -18,7 +18,7 @@ const OUTER_BAR_COUNT = 26;
 const ASSISTANT_SENTENCES = [
   'Olá! Seja bem-vindo.',
   'Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento.',
-  'O recebedor é Guilherme Pereira Costa.',
+  'O banco recebedor é o Banco do Brasil, em nome de João Pedro.',
   'É simples, rápido e seguro.',
   'Obrigado!',
 ];
@@ -295,7 +295,7 @@ export function VoiceAssistant() {
   }, [cancelSpeechFallback, startWaveLoop, stopWaveLoop]);
 
   const fetchNeuralVoiceAudio = useCallback(async (): Promise<HTMLAudioElement> => {
-    const res = await fetch('/api/assistant-voice?v=guilherme-1');
+    const res = await fetch('/api/assistant-voice?v=joao-pedro-2');
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
     }

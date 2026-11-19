@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ASSISTANT_GREETING_PT_BR =
-  'Olá! Seja bem-vindo. Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento. O recebedor é Guilherme Pereira Costa. É simples, rápido e seguro. Obrigado!';
+  'Olá! Seja bem-vindo. Para realizar seu pagamento via Pix, basta clicar no botão Copiar Chave Pix e depois acessar o aplicativo do seu banco para concluir o pagamento. O banco recebedor é o Banco do Brasil, em nome de João Pedro. É simples, rápido e seguro. Obrigado!';
 
 let cachedWavBuffer: Buffer | null = null;
 let pendingTtsPromise: Promise<Buffer> | null = null;
